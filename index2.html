@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<!-- References:
+http://alignedleft.com/tutorials/d3/drawing-svgs
+http://bl.ocks.org/d3noob/9576689
+http://www.d3noob.org/2014/03/dynamically-retrieve-historical-stock.html
+And Ira Greenberg examples
+By Andrew Clark, Ryan Shuhart and Ed Johnson -->
+
+
+<!-- TODO:
+Convert table to fully D3
+Add stock data -->
+
+
+<head>
+
+<meta charset="utf-8">
+
+<title>ARE - Data Comparison Vizualization - Assignment 10</title>
+
+<style> /* set the CSS */
+
+body { font: 12px Arial;}
+
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+text.shadow {
+    stroke: white;
+    stroke-width: 2.5px;
+    opacity: 0.9;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+</style>
+
+</head>
+
+<table>
+  <tr>
+    <td id="cell1" name="cell1"> </td>
+    <td id="cell2" name="cell2"> </td>
+    <td id="cell3" name="cell3"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td id="cell4" name="cell4"> </td>
+    <td id="cell5" name="cell5"> </td>
+    <td id="cell6" name="cell6"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td id="cell7" name="cell7"> </td>
+    <td id="cell8" name="cell8"> </td>
+    <td id="cell9" name="cell9"> </td>
+  </tr>
+</table>
+<body onload="init()">
+
+	<!-- Download the minimized version of D3 from the website -->
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+
+// Set the dimensions of the graph
+var margin = {top: 30, right: 40, bottom: 30, left: 50},
+    width = 600 - margin.left - margin.right,
+    height = 270 - margin.top - margin.bottom;
+
+// Parse the date / time
+var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+// Set the ranges
+var x = d3.time.scale().range([0, width]);
+var y = d3.scale.linear().range([height, 0]);
+
+var xAxis = d3.svg.axis().scale(x)
+    .orient("bottom").ticks(5);
+
+var    yAxis = d3.svg.axis().scale(y)
+    .orient("left").ticks(5);
+
+var valueline = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.high); });
+
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate("
+            + margin.left
+            + "," + margin.top + ")");
+
+//////////////////////////////////////////////////
+
+make_chart = function(id, stock, start, end, title){
+var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+    "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
+    "where%20symbol%20%3D%20%22"
+    +stock+"%22%20and%20startDate%20%3D%20%22"
+    +start+"%22%20and%20endDate%20%3D%20%22"
+    +end+"%22&format=json&env=store%3A%2F%2F"
+    +"datatables.org%2Falltableswithkeys";
+
+    // Get the data
+    d3.json(inputURL, function(error, data){
+
+    data.query.results.quote.forEach(function(d) {
+        d.date = parseDate(d.Date);
+        d.high = +d.High;
+        d.low = +d.Low;
+    });
+
+    var last_price = data.query.results.quote[0].Adj_Close;
+    console.log(last_price);
+
+    // Scale the range of the data
+    x.domain(d3.extent(data.query.results.quote, function(d) {
+        return d.date; }));
+    y.domain([
+        d3.min(data.query.results.quote, function(d) { return d.low; }),
+        d3.max(data.query.results.quote, function(d) { return d.high; })
+    ]);
+
+    svg.append("path")        // Add the valueline path.
+        .attr("class", "line")
+        .attr("d", valueline(data.query.results.quote));
+
+    svg.append("g")            // Add the X Axis
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    svg.append("g")            // Add the Y Axis
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    svg.append("text")          // Add the label
+        .attr("class", "label")
+        .attr("transform", "translate(" + (width+3) + ","
+            + y(data.query.results.quote[0].high) + ")")
+        .attr("dy", ".35em")
+        .attr("text-anchor", "start")
+        .style("fill", "steelblue")
+        .text(last_price);
+
+    svg.append("text")          // Add the title shadow
+        .attr("x", (width / 2))
+        .attr("y", margin.top / 2)
+        .attr("text-anchor", "middle")
+        .attr("class", "shadow")
+        .style("font-size", "16px")
+        .text(title);
+
+    svg.append("text")          // Add the title
+        .attr("class", "stock")
+        .attr("x", (width / 2))
+        .attr("y", margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .text(title);
+});
+};
+// Get Closing Price
+var start = "2016-01-01"
+var end = "2017-03-31"
+
+
+function init(){
+  //for(var i = 1; i <= 9; i++) scatter_plot.call(scatter_plot, "#cell"+i, 400, 400, dataset[i]);
+  make_chart.call(make_chart, "#cell1", "TWOU", start, end, "2U, Inc. (TWOU)");
+  make_chart.call(make_chart, "#cell2", "GLD", start, end, "GOLD!");
+}
+</script>
+</body>
+</html>
