@@ -20,9 +20,11 @@ Add stock data -->
 
 <title>ARE - Data Comparison Vizualization - Assignment 10</title>
 
-<style> /* set the CSS */
+<style> 
 
-body { font: 12px Arial;}
+body { 
+  font: 12px Arial;
+}
 
 path {
     stroke: steelblue;
@@ -44,7 +46,7 @@ text.shadow {
     shape-rendering: crispEdges;
 }
 
-h1{
+h1  {
   text-align: center;
   
 }
@@ -52,7 +54,7 @@ h1{
 </style>
 
 </head>
-<h1> Financial Markets Overview</h1>
+<h1>Financial Markets Overview</h1>
 <table>
   <tr>
     <td id="cell1" name="cell1"> </td>
@@ -69,11 +71,17 @@ h1{
 </table>
 <body onload="init()">
 
+
 	<!-- Download the minimized version of D3 from the website -->
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script>
 
 
+// Starting and Closing dates
+var start = "2016-01-01"
+var end = "2017-03-31"
+
+// Function that takes the table cell location, stock ticker, start date, end date, and graph title
 make_chart = function(id, stock, start, end, title){
   
   // Set the dimensions of the graph
@@ -81,7 +89,7 @@ make_chart = function(id, stock, start, end, title){
     width = 600 - margin.left - margin.right,
     height = 270 - margin.top - margin.bottom;
 
-  // Parse the date / time
+  // Parse the date to Year, month, date format
   var parseDate = d3.time.format("%Y-%m-%d").parse;
 
   // Set the ranges
@@ -115,7 +123,7 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     +end+"%22&format=json&env=store%3A%2F%2F"
     +"datatables.org%2Falltableswithkeys";
 
-    // Get the data
+    // Donwload the JSON data and parse
     d3.json(inputURL, function(error, data){
 
     data.query.results.quote.forEach(function(d) {
@@ -159,7 +167,7 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 
     svg.append("text")          // Add the title shadow
         .attr("x", (width / 2))
-        .attr("y", margin.top / 2)
+        .attr("y", margin.top - 40) 
         .attr("text-anchor", "middle")
         .attr("class", "shadow")
         .style("font-size", "16px")
@@ -168,24 +176,21 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     svg.append("text")          // Add the title
         .attr("class", "stock")
         .attr("x", (width / 2))
-        .attr("y", margin.top / 2)
+        .attr("y", margin.top - 40)
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .text(title);
 });
 };
-// Get Closing Price
-var start = "2016-01-01"
-var end = "2017-03-31"
 
 
 function init(){
-  make_chart.call(make_chart, "#cell1","TWOU", start, end, "2U, Inc. (TWOU)");
-  make_chart.call(make_chart, "#cell2","GLD", start, end, "GOLD!");
-  make_chart.call(make_chart, "#cell3","VIX", start, end, "VIX!");
+  make_chart.call(make_chart, "#cell1","BND", start, end, "Vanguard Total Bond Market ETF");
+  make_chart.call(make_chart, "#cell2","GLD", start, end, "Gold ETF");
+  make_chart.call(make_chart, "#cell3","VIX", start, end, "Volatility Index");
   make_chart.call(make_chart, "#cell4","VOO", start, end, "S&P 500 ETF");
   make_chart.call(make_chart, "#cell5","DIA", start, end, "Dow Jones Industrial Average ETF");
-  make_chart.call(make_chart, "#cell6","BND", start, end, "Vanguard Total Bond Market ETF");
+  make_chart.call(make_chart, "#cell6","TWOU", start, end, "2U, Getting rich off us");
 }
 </script>
 </body>
