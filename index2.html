@@ -20,9 +20,9 @@ Add stock data -->
 
 <title>ARE - Data Comparison Vizualization - Assignment 10</title>
 
-<style> 
+<style>
 
-body { 
+body {
   font: 12px Arial;
 }
 
@@ -48,7 +48,7 @@ text.shadow {
 
 h1  {
   text-align: center;
-  
+
 }
 
 </style>
@@ -57,6 +57,7 @@ h1  {
 <h1>Financial Markets Overview</h1>
 <table>
   <tr>
+    <h2>Equities</h2>
     <td id="cell1" name="cell1"> </td>
     <td id="cell2" name="cell2"> </td>
     <td id="cell3" name="cell3"> </td>
@@ -64,9 +65,18 @@ h1  {
 </table>
 <table>
   <tr>
+    <h2>Commodities</h2>
     <td id="cell4" name="cell4"> </td>
     <td id="cell5" name="cell5"> </td>
     <td id="cell6" name="cell6"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <h2>Currencies</h2>
+    <td id="cell7" name="cell7"> </td>
+    <td id="cell8" name="cell8"> </td>
+    <td id="cell9" name="cell9"> </td>
   </tr>
 </table>
 <body onload="init()">
@@ -83,7 +93,7 @@ var end = "2017-03-31"
 
 // Function that takes the table cell location, stock ticker, start date, end date, and graph title
 make_chart = function(id, stock, start, end, title){
-  
+
   // Set the dimensions of the graph
   var margin = {top: 30, right: 40, bottom: 30, left: 50},
     width = 600 - margin.left - margin.right,
@@ -106,7 +116,7 @@ make_chart = function(id, stock, start, end, title){
     .x(function(d) { return x(d.date); })
     .y(function(d) { return y(d.high); });
 
-  var svg = d3.select("body")
+  var svg = d3.select(id)
     .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -167,7 +177,7 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 
     svg.append("text")          // Add the title shadow
         .attr("x", (width / 2))
-        .attr("y", margin.top - 40) 
+        .attr("y", margin.top - 40)
         .attr("text-anchor", "middle")
         .attr("class", "shadow")
         .style("font-size", "16px")
@@ -185,12 +195,18 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 
 
 function init(){
-  make_chart.call(make_chart, "#cell1","BND", start, end, "Vanguard Total Bond Market ETF");
-  make_chart.call(make_chart, "#cell2","GLD", start, end, "Gold ETF");
-  make_chart.call(make_chart, "#cell3","VIX", start, end, "Volatility Index");
-  make_chart.call(make_chart, "#cell4","VOO", start, end, "S&P 500 ETF");
-  make_chart.call(make_chart, "#cell5","DIA", start, end, "Dow Jones Industrial Average ETF");
-  make_chart.call(make_chart, "#cell6","TWOU", start, end, "2U, Getting rich off us");
+  //Equities
+  make_chart.call(make_chart, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
+  make_chart.call(make_chart, "#cell2","^GSPC", start, end, "S&P 500 Index");
+  make_chart.call(make_chart, "#cell3","^IXIC", start, end, "NASDAQ Composite");
+  //Commodities
+  make_chart.call(make_chart, "#cell4","USO", start, end, "United States Oil");
+  make_chart.call(make_chart, "#cell5","GLD", start, end, "Gold ETF");
+  make_chart.call(make_chart, "#cell6","USCI", start, end, "United States Commodity Index");
+  //Currencies
+  make_chart.call(make_chart, "#cell7","FXE", start, end, "CurrencyShares Euro ETF");
+  make_chart.call(make_chart, "#cell8","FXB", start, end, "CurrencyShares British Pound Ster ETF");
+  make_chart.call(make_chart, "#cell9","UUP", start, end, "PowerShares DB US Dollar Bullish ETF");
 }
 </script>
 </body>
