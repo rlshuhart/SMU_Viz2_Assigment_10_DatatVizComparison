@@ -5,6 +5,8 @@
 http://alignedleft.com/tutorials/d3/drawing-svgs
 http://bl.ocks.org/d3noob/9576689
 http://www.d3noob.org/2014/03/dynamically-retrieve-historical-stock.html
+https://bl.ocks.org/mbostock/3048450
+
 And Ira Greenberg examples
 
 By Andrew Clark, Ryan Shuhart and Ed Johnson -->
@@ -202,9 +204,6 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 make_hist = function(id, stock, start, end, title){
 
 
-  // Parse the date to Year, month, date format
-  var parseDate = d3.time.format("%Y-%m-%d").parse;
-
 var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
     "where%20symbol%20%3D%20%22"
@@ -217,8 +216,7 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     d3.json(inputURL, function(error, data){
 
     data.query.results.quote.forEach(function(d) {
-        d.date = parseDate(d.Date);
-        d.volume = +d.Volume
+        d.volume = +d.volume
     });
 
     var volume = data.query.results.quote[0].Volume;
@@ -228,22 +226,30 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     x.domain(d3.extent(data.query.results.quote, function(d) {
         return d.date; }));
     y.domain([
-        d3.min(data.query.results.quote, function(d) { return d.Volume; }),
+        d3.min(data.query.results.quote, function(d) { return d.volume; }),
     ]);
 
-    var svg = d3.select("svg"),
-        margin = {top: 10, right: 30, bottom: 30, left: 30},
-        width = +svg.attr("width") - margin.left - margin.right,
-        height = +svg.attr("height") - margin.top - margin.bottom,
-        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    // Set the dimensions of the graph
+    var margin = {top: 30, right: 40, bottom: 30, left: 50},
+      width = 600 - margin.left - margin.right,
+      height = 270 - margin.top - margin.bottom;
+
+    var svg = d3.select(id)
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate("
+            + margin.left
+            + "," + margin.top + ")");
 
     var x = d3.scaleLinear()
         .rangeRound([0, width]);
 
     var bins = d3.histogram()
         .domain(x.domain())
-        .thresholds(x.ticks(20)).extent(data.query.results.quote, function(d) {
-            return d.date; });
+        .thresholds(x.ticks(20))(data.query.results.quote, function(d) {
+            return d.volume; });
 
     var y = d3.scaleLinear()
         .domain([0, d3.max(bins, function(d) { return d.length; })])
