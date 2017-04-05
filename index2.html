@@ -6,12 +6,8 @@ http://alignedleft.com/tutorials/d3/drawing-svgs
 http://bl.ocks.org/d3noob/9576689
 http://www.d3noob.org/2014/03/dynamically-retrieve-historical-stock.html
 And Ira Greenberg examples
+
 By Andrew Clark, Ryan Shuhart and Ed Johnson -->
-
-
-<!-- TODO:
-Convert table to fully D3
-Add stock data -->
 
 
 <head>
@@ -77,6 +73,14 @@ h1  {
     <td id="cell7" name="cell7"> </td>
     <td id="cell8" name="cell8"> </td>
     <td id="cell9" name="cell9"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <h2>Volume</h2>
+    <td id="cell10" name="cell10"> </td>
+    <td id="cell11" name="cell11"> </td>
+    <td id="cell12" name="cell12"> </td>
   </tr>
 </table>
 <body onload="init()">
@@ -194,6 +198,82 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 };
 
 
+// Function that takes the table cell location, stock ticker, start date, end date, and graph title
+make_hist = function(id, stock, start, end, title){
+
+
+  // Parse the date to Year, month, date format
+  var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+    "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
+    "where%20symbol%20%3D%20%22"
+    +stock+"%22%20and%20startDate%20%3D%20%22"
+    +start+"%22%20and%20endDate%20%3D%20%22"
+    +end+"%22&format=json&env=store%3A%2F%2F"
+    +"datatables.org%2Falltableswithkeys";
+
+    // Donwload the JSON data and parse
+    d3.json(inputURL, function(error, data){
+
+    data.query.results.quote.forEach(function(d) {
+        d.date = parseDate(d.Date);
+        d.volume = +d.Volume
+    });
+
+    var volume = data.query.results.quote[0].Volume;
+    console.log(volume);
+
+    // Scale the range of the data
+    x.domain(d3.extent(data.query.results.quote, function(d) {
+        return d.date; }));
+    y.domain([
+        d3.min(data.query.results.quote, function(d) { return d.Volume; }),
+    ]);
+
+    var svg = d3.select("svg"),
+        margin = {top: 10, right: 30, bottom: 30, left: 30},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scaleLinear()
+        .rangeRound([0, width]);
+
+    var bins = d3.histogram()
+        .domain(x.domain())
+        .thresholds(x.ticks(20)).extent(data.query.results.quote, function(d) {
+            return d.date; });
+
+    var y = d3.scaleLinear()
+        .domain([0, d3.max(bins, function(d) { return d.length; })])
+        .range([height, 0]);
+
+    var bar = g.selectAll(".bar")
+      .data(bins)
+      .enter().append("g")
+        .attr("class", "bar")
+        .attr("transform", function(d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; });
+
+    bar.append("rect")
+        .attr("x", 1)
+        .attr("width", x(bins[0].x1) - x(bins[0].x0) - 1)
+        .attr("height", function(d) { return height - y(d.length); });
+
+    bar.append("text")
+        .attr("dy", ".75em")
+        .attr("y", 6)
+        .attr("x", (x(bins[0].x1) - x(bins[0].x0)) / 2)
+        .attr("text-anchor", "middle")
+        .text(function(d) { return formatCount(d.length); });
+
+    g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+  });
+  };
+
 function init(){
   //Equities
   make_chart.call(make_chart, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
@@ -207,6 +287,8 @@ function init(){
   make_chart.call(make_chart, "#cell7","FXE", start, end, "CurrencyShares Euro ETF");
   make_chart.call(make_chart, "#cell8","FXB", start, end, "CurrencyShares British Pound Ster ETF");
   make_chart.call(make_chart, "#cell9","UUP", start, end, "PowerShares DB US Dollar Bullish ETF");
+  // Volume
+  make_hist.call(make_chart, "#cell10","^DJI", start, end, "Dow Jones Industrial Average Volume");
 }
 </script>
 </body>
