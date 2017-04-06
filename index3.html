@@ -62,8 +62,7 @@ h1  {
   </tr>
 </table>
 <table>
-  <tr>
-    <h2>Commodities</h2>
+  <tr> <!-- Equity volume -->
     <td id="cell4" name="cell4"> </td>
     <td id="cell5" name="cell5"> </td>
     <td id="cell6" name="cell6"> </td>
@@ -71,18 +70,32 @@ h1  {
 </table>
 <table>
   <tr>
-    <h2>Currencies</h2>
+    <h2>Commodities</h2>
     <td id="cell7" name="cell7"> </td>
     <td id="cell8" name="cell8"> </td>
     <td id="cell9" name="cell9"> </td>
   </tr>
 </table>
 <table>
-  <tr>
-    <h2>Volume</h2>
+  <tr> <!-- Commodities volume -->
     <td id="cell10" name="cell10"> </td>
     <td id="cell11" name="cell11"> </td>
     <td id="cell12" name="cell12"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <h2>Currencies</h2>
+    <td id="cell13" name="cell13"> </td>
+    <td id="cell14" name="cell14"> </td>
+    <td id="cell15" name="cell15"> </td>
+  </tr>
+</table>
+<table>
+  <tr> <!-- Currencies volume -->
+    <td id="cell16" name="cell16"> </td>
+    <td id="cell17" name="cell17"> </td>
+    <td id="cell18" name="cell18"> </td>
   </tr>
 </table>
 <body onload="init()">
@@ -115,7 +128,7 @@ make_chart = function(id, stock, start, end, title){
   var xAxis = d3.svg.axis().scale(x)
     .orient("bottom").ticks(5);
 
-  var    yAxis = d3.svg.axis().scale(y)
+  var yAxis = d3.svg.axis().scale(y)
     .orient("left").ticks(5);
 
   var valueline = d3.svg.line()
@@ -181,13 +194,6 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
         .style("fill", "steelblue")
         .text(last_price);
 
-    svg.append("text")          // Add the title shadow
-        .attr("x", (width / 2))
-        .attr("y", margin.top - 40)
-        .attr("text-anchor", "middle")
-        .attr("class", "shadow")
-        .style("font-size", "16px")
-        .text(title);
 
     svg.append("text")          // Add the title
         .attr("class", "stock")
@@ -200,8 +206,8 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 };
 
 
-// Function that takes the table cell location, stock ticker, start date, end date, and graph title
-make_hist = function(id, stock, start, end, title){
+// Function that takes the table cell location, stock ticker, start date, amd end date
+make_hist = function(id, stock, start, end){
 
   // Set the dimensions of the graph
   var margin = {top: 30, right: 40, bottom: 30, left: 50},
@@ -212,25 +218,20 @@ make_hist = function(id, stock, start, end, title){
   var parseDate = d3.time.format("%Y-%m-%d").parse;
 
   // Set the ranges
-  var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+  var x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
   var y = d3.scale.linear().range([height, 0]);
 
-  // var xAxis = d3.svg.axis()
-  //   //.scale(x)
-  //   //.orient("bottom")
-  //   //.ticks(5);
-  //   //.tickFormat(d3.time.format("%Y-%m"));
-  var xAxis = d3.svg.axis().scale(x)
-      .orient("bottom").ticks(5);
+  var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5) //.tickFormat(d3.time.format("%Y-%m"));
 
   var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
+  .scale(y)
+  .orient("left")
     .ticks(5);
 
   var svg = d3.select(id)
     .append("svg")
-    .attr("width", width + margin.left + margin.right)
+    .attr("width", width +
+     margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate("
@@ -255,27 +256,17 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     x.domain(data.query.results.quote.map(function(d) { return d.date; }));
     y.domain([0, d3.max(data.query.results.quote, function(d) { console.log(d.volume); return d.volume; })]);
 
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis)
-          // .selectAll("text")
-          // .style("text-anchor", "end")
-          // .attr("dx", "-.8em")
-          // .attr("dy", "-.55em")
-          // .attr("transform", "rotate(-90)" );
-
-    svg.append("g")
+    svg.append("g") // y volmne in millions label
         .attr("class", "y axis")
         .call(yAxis)
         .append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", 6)
+        .attr("y", -50)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
         .text("Volume in Millions");
 
-    svg.selectAll("bar")
+    svg.selectAll("bar") // fill bars
         .data(data.query.results.quote)
         .enter().append("rect")
         .style("fill", "steelblue")
@@ -289,18 +280,28 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 function init(){
   //Equities
   make_chart.call(make_chart, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
-  // make_chart.call(make_chart, "#cell2","^GSPC", start, end, "S&P 500 Index");
-  // make_chart.call(make_chart, "#cell3","^IXIC", start, end, "NASDAQ Composite");
-  // //Commodities
-  // make_chart.call(make_chart, "#cell4","USO", start, end, "United States Oil");
-  // make_chart.call(make_chart, "#cell5","GLD", start, end, "Gold ETF");
-  // make_chart.call(make_chart, "#cell6","USCI", start, end, "United States Commodity Index");
+  make_chart.call(make_chart, "#cell2","^GSPC", start, end, "S&P 500 Index");
+  make_chart.call(make_chart, "#cell3","^IXIC", start, end, "NASDAQ Composite");
+  // Equities Volume
+  make_hist.call(make_hist, "#cell4","^DJI", start, end);
+  make_hist.call(make_hist, "#cell5","^GSPC", start, end);
+  make_hist.call(make_hist, "#cell6","^IXIC", start, end);
+  //Commodities
+  make_chart.call(make_chart, "#cell7","USO", start, end, "United States Oil");
+  make_chart.call(make_chart, "#cell8","GLD", start, end, "Gold ETF");
+  make_chart.call(make_chart, "#cell9","USCI", start, end, "United States Commodity Index");
+  // Commodities Volume
+  make_hist.call(make_hist, "#cell10","USO", start, end);
+  make_hist.call(make_hist, "#cell11","GLD", start, end);
+  make_hist.call(make_hist, "#cell12","USCI", start, end);
   // //Currencies
-  // make_chart.call(make_chart, "#cell7","FXE", start, end, "CurrencyShares Euro ETF");
-  // make_chart.call(make_chart, "#cell8","FXB", start, end, "CurrencyShares British Pound Ster ETF");
-  // make_chart.call(make_chart, "#cell9","UUP", start, end, "PowerShares DB US Dollar Bullish ETF");
-  // // Volume
-  make_hist.call(make_hist, "#cell1","^DJI", start, end, "Dow Jones Industrial Average Volume");
+  make_chart.call(make_chart, "#cell13","FXE", start, end, "CurrencyShares Euro ETF");
+  make_chart.call(make_chart, "#cell14","FXB", start, end, "CurrencyShares British Pound Ster ETF");
+  make_chart.call(make_chart, "#cell15","UUP", start, end, "PowerShares DB US Dollar Bullish ETF");
+  // Currencies Volume
+  make_hist.call(make_hist, "#cell16","FXE", start, end);
+  make_hist.call(make_hist, "#cell17","FXB", start, end);
+  make_hist.call(make_hist, "#cell18","UUP", start, end);
 }
 </script>
 </body>
