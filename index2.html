@@ -216,18 +216,12 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     d3.json(inputURL, function(error, data){
 
     data.query.results.quote.forEach(function(d) {
-        d.volume = +d.volume
+        d.Volume = +d.Volume
     });
 
-    var volume = data.query.results.quote[0].Volume;
-    console.log(volume);
+    var volumeData = data.query.results.quote[0].Volume;
+    console.log(volumeData);
 
-    // Scale the range of the data
-    x.domain(d3.extent(data.query.results.quote, function(d) {
-        return d.date; }));
-    y.domain([
-        d3.min(data.query.results.quote, function(d) { return d.volume; }),
-    ]);
 
     // Set the dimensions of the graph
     var margin = {top: 30, right: 40, bottom: 30, left: 50},
@@ -243,15 +237,15 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
             + margin.left
             + "," + margin.top + ")");
 
-    var x = d3.scaleLinear()
-        .rangeRound([0, width]);
+
+    var x = d3.scale.linear().rangeRound([0, width]);
 
     var bins = d3.histogram()
-        .domain(x.domain())
-        .thresholds(x.ticks(20))(data.query.results.quote, function(d) {
-            return d.volume; });
+    .domain(x.domain())
+    .thresholds(x.ticks(20))(data.query.results.quote, function(d) {
+            return d.Volume; });
 
-    var y = d3.scaleLinear()
+    var y = d3.scale.linear()
         .domain([0, d3.max(bins, function(d) { return d.length; })])
         .range([height, 0]);
 
