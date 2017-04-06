@@ -240,6 +240,7 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 
     var x = d3.scale.linear().rangeRound([0, width]);
 
+////Work on this, code using a bar chart?
     var bins = d3.histogram()
     .domain(x.domain())
     .thresholds(x.ticks(20))(data.query.results.quote, function(d) {
