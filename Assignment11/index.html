@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+
+<!-- References:
+TODO:
+table, candlesticks and line graph.
+Scroll bars and zooming. Fancy, crazy plot if time
+By Andrew Clark, Ryan Shuhart and Ed Johnson
+
+Table: http://bl.ocks.org/llimllib/841dd138e429bb0545df
+Steamgraph: https://bl.ocks.org/mbostock/4060954
+-->
+
+
+
+<head>
+
+<meta charset="utf-8">
+
+<title>ARE - Data Comparison Vizualization - Assignment 11 - Final</title>
+
+<style>
+
+body {
+  font: 12px Arial;
+}
+
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+text.shadow {
+    stroke: white;
+    stroke-width: 2.5px;
+    opacity: 0.9;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+h1  {
+  text-align: center;
+
+}
+
+</style>
+
+</head>
+<h1>Dow Jones Dashboard</h1>
+<table>
+  <tr>
+    <!-- <h2>Equities</h2> -->
+    <td id="cell1" name="cell1"> </td>
+    <td id="cell2" name="cell2"> </td>
+    <td id="cell3" name="cell3"> </td>
+  </tr>
+</table>
+<!-- <table>
+  <tr>
+    <td id="cell4" name="cell4"> </td>
+    <td id="cell5" name="cell5"> </td>
+    <td id="cell6" name="cell6"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <h2>Commodities</h2>
+    <td id="cell7" name="cell7"> </td>
+    <td id="cell8" name="cell8"> </td>
+    <td id="cell9" name="cell9"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td id="cell10" name="cell10"> </td>
+    <td id="cell11" name="cell11"> </td>
+    <td id="cell12" name="cell12"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <h2>Currencies</h2>
+    <td id="cell13" name="cell13"> </td>
+    <td id="cell14" name="cell14"> </td>
+    <td id="cell15" name="cell15"> </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td id="cell16" name="cell16"> </td>
+    <td id="cell17" name="cell17"> </td>
+    <td id="cell18" name="cell18"> </td>
+  </tr>
+</table> -->
+<body onload="init()">
+
+
+	<!-- Download the minimized version of D3 from the website -->
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+
+// Starting and Closing dates
+var start = "2017-01-01"
+var end = "2017-03-31"
+
+// // Function that takes the table cell location, stock ticker, start date, end date, and graph title
+// make_Streamgraph = function(id, stock, start, end, title){
+//
+//   var n = 20, // number of layers
+//       m = 200, // number of samples per layer
+//       k = 10; // number of bumps per layer
+//
+//       // WIP
+//   var stack = d3.stack().keys(d3.range(n)).offset(d3.stackOffsetWiggle),
+//         layers0 = stack(d3.transpose(d3.range(n).map(function() { return (d.low, d.high); }))),
+//         layers1 = stack(d3.transpose(d3.range(n).map(function() { return (d.close, d.adjClose); }))),
+//         layers = layers0.concat(layers1);
+//
+//     var svg = d3.select("svg"),
+//         width = +svg.attr("width"),
+//         height = +svg.attr("height");
+//
+//   // Parse the date to Year, month, date format
+//   var parseDate = d3.time.format("%Y-%m-%d").parse;
+//
+//
+// var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+//     "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
+//     "where%20symbol%20%3D%20%22"
+//     +stock+"%22%20and%20startDate%20%3D%20%22"
+//     +start+"%22%20and%20endDate%20%3D%20%22"
+//     +end+"%22&format=json&env=store%3A%2F%2F"
+//     +"datatables.org%2Falltableswithkeys";
+//
+//     // Donwload the JSON data and parse
+//     d3.json(inputURL, function(error, data){
+//
+//     data.query.results.quote.forEach(function(d) {
+//         d.date = parseDate(d.Date);
+//         d.adjClose = +d.Adj_Close;
+//         d.close = +d.Close;
+//         d.high = +d.High;
+//         d.low = +d.Low;
+//     });
+//
+//
+//     var x = d3.scaleLinear()
+//         .domain([0, m - 1])
+//         .range([0, width]);
+//
+//     var y = d3.scaleLinear()
+//         .domain([d3.min(layers, stackMin), d3.max(layers, stackMax)])
+//         .range([height, 0]);
+//
+//     var z = d3.interpolateCool;
+//
+//     var area = d3.area()
+//         .x(function(d, i) { return x(i); })
+//         .y0(function(d) { return y(d[0]); })
+//         .y1(function(d) { return y(d[1]); });
+//
+//     svg.selectAll("path")
+//         .data(layers0)
+//         .enter().append("path")
+//         .attr("d", area)
+//         .attr("fill", function() { return z(Math.random()); });
+//
+// function stackMax(layer) {
+//   return d3.max(layer, function(d) { return d[1]; });
+// }
+//
+// function stackMin(layer) {
+//   return d3.min(layer, function(d) { return d[0]; });
+// }
+//
+// function transition() {
+//   var t;
+//   d3.selectAll("path")
+//     .data((t = layers1, layers1 = layers0, layers0 = t))
+//     .transition()
+//       .duration(2500)
+//       .attr("d", area);
+//   });
+// };
+
+// Function that takes the table cell location, stock ticker, start date, end date, and graph title
+make_table = function(id, stock, start, end, title){
+
+  var rows = []
+  // Parse the date to Year, month, date format
+  var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+  // d3.csv("dortmund.csv", function(error, csv) {
+  //   csv.forEach(function(row) {
+  //     row.mu = parseFloat(row.mu).toFixed(1);
+  //     row.sigma = parseFloat(row.sigma).toFixed(1);
+  //     row.dt = formatdate(new Date(Date.parse(row.date)));
+  //
+  //     var res = parseFloat(row.result);
+  //     if (res < .5) {
+  //       row.result = "loss";
+  //     } else if (res > .5) {
+  //       row.result = "win";
+  //     } else {
+  //       row.result = "draw";
+  //     }
+    //
+    //   rows.push(row);
+    // });
+var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+    "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
+    "where%20symbol%20%3D%20%22"
+    +stock+"%22%20and%20startDate%20%3D%20%22"
+    +start+"%22%20and%20endDate%20%3D%20%22"
+    +end+"%22&format=json&env=store%3A%2F%2F"
+    +"datatables.org%2Falltableswithkeys";
+
+    // Donwload the JSON data and parse
+    d3.json(inputURL, function(error, data){
+
+    data.query.results.quote.forEach(function(d) {
+              d.date = parseDate(d.Date);
+              d.adjClose = +d.Adj_Close;
+              d.close = +d.Close;
+              d.high = +d.High;
+              d.low = +d.Low;
+
+          rows.push(d);
+    });
+
+    var table = d3.select("#datatable").append("table");
+       thead = table.append("thead");
+       tbody = table.append("tbody");
+
+   thead.append("th").text("Date");
+   thead.append("th").text("Opponent");
+   thead.append("th").text("Result");
+   thead.append("th").text("Rating");
+   thead.append("th").text("");
+
+   var tr = tbody.selectAll("tr")
+       .data(rows)
+       .enter().append("tr");
+
+   var td = tr.selectAll("td")
+         .data(function(d) { return [d.date, d.adjClose, d.high, d.low]; })
+       .enter().append("td")
+         .text(function(d) { return d; });
+
+   var width = 80,
+       height = d3.select("table")[0][0].clientHeight,
+       mx = 10,
+       radius = 2;
+  });
+};
+
+
+// Function that takes the table cell location, stock ticker, start date, end date, and graph title
+make_chart = function(id, stock, start, end, title){
+
+  // Set the dimensions of the graph
+  var margin = {top: 30, right: 40, bottom: 30, left: 50},
+    width = 600 - margin.left - margin.right,
+    height = 270 - margin.top - margin.bottom;
+
+  // Parse the date to Year, month, date format
+  var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+  // Set the ranges
+  var x = d3.time.scale().range([0, width]);
+  var y = d3.scale.linear().range([height, 0]);
+
+  var xAxis = d3.svg.axis().scale(x)
+    .orient("bottom").ticks(5);
+
+  var yAxis = d3.svg.axis().scale(y)
+    .orient("left").ticks(5);
+
+  var valueline = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.high); });
+
+  var svg = d3.select(id)
+    .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate("
+        + margin.left
+        + "," + margin.top + ")");
+
+var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+    "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
+    "where%20symbol%20%3D%20%22"
+    +stock+"%22%20and%20startDate%20%3D%20%22"
+    +start+"%22%20and%20endDate%20%3D%20%22"
+    +end+"%22&format=json&env=store%3A%2F%2F"
+    +"datatables.org%2Falltableswithkeys";
+
+    // Donwload the JSON data and parse
+    d3.json(inputURL, function(error, data){
+
+    data.query.results.quote.forEach(function(d) {
+        d.date = parseDate(d.Date);
+        d.high = +d.High;
+        d.low = +d.Low;
+    });
+
+    var last_price = data.query.results.quote[0].Adj_Close;
+    //console.log(last_price);
+
+    // Scale the range of the data
+    x.domain(d3.extent(data.query.results.quote, function(d) {
+        return d.date; }));
+    y.domain([
+        d3.min(data.query.results.quote, function(d) { return d.low; }),
+        d3.max(data.query.results.quote, function(d) { return d.high; })
+    ]);
+
+    svg.append("path")        // Add the valueline path.
+        .attr("class", "line")
+        .attr("d", valueline(data.query.results.quote));
+
+    svg.append("g")            // Add the X Axis
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    svg.append("g")            // Add the Y Axis
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    svg.append("text")          // Add the label
+        .attr("class", "label")
+        .attr("transform", "translate(" + (width+3) + ","
+            + y(data.query.results.quote[0].high) + ")")
+        .attr("dy", ".35em")
+        .attr("text-anchor", "start")
+        .style("fill", "steelblue")
+        .text(last_price);
+
+
+    svg.append("text")          // Add the title
+        .attr("class", "stock")
+        .attr("x", (width / 2))
+        .attr("y", margin.top - 40)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .text(title);
+});
+};
+
+
+
+// Function that takes the table cell location, stock ticker, start date, amd end date
+make_hist = function(id, stock, start, end){
+
+  // Set the dimensions of the graph
+  var margin = {top: 30, right: 40, bottom: 30, left: 50},
+    width = 600 - margin.left - margin.right,
+    height = 270 - margin.top - margin.bottom;
+
+  // Parse the date to Year, month, date format
+  var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+  // Set the ranges
+  var x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
+  var y = d3.scale.linear().range([height, 0]);
+
+  var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5) //.tickFormat(d3.time.format("%Y-%m"));
+
+  var yAxis = d3.svg.axis()
+  .scale(y)
+  .orient("left")
+    .ticks(5);
+
+  var svg = d3.select(id)
+    .append("svg")
+    .attr("width", width +
+     margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate("
+      + margin.left + "," + margin.top + ")");
+
+var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+    "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
+    "where%20symbol%20%3D%20%22"
+    +stock+"%22%20and%20startDate%20%3D%20%22"
+    +start+"%22%20and%20endDate%20%3D%20%22"
+    +end+"%22&format=json&env=store%3A%2F%2F"
+    +"datatables.org%2Falltableswithkeys";
+
+    // Donwload the JSON data and parse
+    d3.json(inputURL, function(error, data){
+
+    data.query.results.quote.forEach(function(d) {
+        d.date = parseDate(d.Date);
+        d.volume = +d.Volume/1000000;  //volumne in millions
+    });
+
+    x.domain(data.query.results.quote.map(function(d) { return d.date; }));
+    y.domain([0, d3.max(data.query.results.quote, function(d) { console.log(d.volume); return d.volume; })]);
+
+    svg.append("g") // y volmne in millions label
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -50)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Volume in Millions");
+
+    svg.selectAll("bar") // fill bars
+        .data(data.query.results.quote)
+        .enter().append("rect")
+        .style("fill", "steelblue")
+        .attr("x", function(d) { return x(d.date); })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) { return y(d.volume); })
+        .attr("height", function(d) { return height - y(d.volume); });
+});
+};
+
+function init(){
+  //Equities
+  make_table.call(make_table, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
+  // make_chart.call(make_chart, "#cell2","^GSPC", start, end, "S&P 500 Index");
+  // make_chart.call(make_chart, "#cell3","^IXIC", start, end, "NASDAQ Composite");
+  // // Equities Volume
+  // make_hist.call(make_hist, "#cell4","^DJI", start, end);
+  // make_hist.call(make_hist, "#cell5","^GSPC", start, end);
+  // make_hist.call(make_hist, "#cell6","^IXIC", start, end);
+  // //Commodities
+  // make_chart.call(make_chart, "#cell7","USO", start, end, "United States Oil");
+  // make_chart.call(make_chart, "#cell8","GLD", start, end, "Gold ETF");
+  // make_chart.call(make_chart, "#cell9","USCI", start, end, "United States Commodity Index");
+  // // Commodities Volume
+  // make_hist.call(make_hist, "#cell10","USO", start, end);
+  // make_hist.call(make_hist, "#cell11","GLD", start, end);
+  // make_hist.call(make_hist, "#cell12","USCI", start, end);
+  // // //Currencies
+  // make_chart.call(make_chart, "#cell13","FXE", start, end, "CurrencyShares Euro ETF");
+  // make_chart.call(make_chart, "#cell14","FXB", start, end, "CurrencyShares British Pound Ster ETF");
+  // make_chart.call(make_chart, "#cell15","UUP", start, end, "PowerShares DB US Dollar Bullish ETF");
+  // // Currencies Volume
+  // make_hist.call(make_hist, "#cell16","FXE", start, end);
+  // make_hist.call(make_hist, "#cell17","FXB", start, end);
+  // make_hist.call(make_hist, "#cell18","UUP", start, end);
+}
+</script>
+</body>
+</html>
