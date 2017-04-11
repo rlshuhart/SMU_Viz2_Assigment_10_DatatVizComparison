@@ -103,13 +103,14 @@ h1  {
 
 
 	<!-- Download the minimized version of D3 from the website -->
-<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
 
 // Starting and Closing dates
 var start = "2017-01-01"
 var end = "2017-03-31"
 
+/// TODO - If used, update to v4
 // // Function that takes the table cell location, stock ticker, start date, end date, and graph title
 // make_Streamgraph = function(id, stock, start, end, title){
 //
@@ -195,26 +196,9 @@ make_table = function(id, stock, start, end, title){
 
   var rows = []
   // Parse the date to Year, month, date format
-  var parseDate = d3.time.format("%Y-%m-%d").parse;
+  var parseDate = d3.timeParse("%Y-%m-%d");
 
-  // d3.csv("dortmund.csv", function(error, csv) {
-  //   csv.forEach(function(row) {
-  //     row.mu = parseFloat(row.mu).toFixed(1);
-  //     row.sigma = parseFloat(row.sigma).toFixed(1);
-  //     row.dt = formatdate(new Date(Date.parse(row.date)));
-  //
-  //     var res = parseFloat(row.result);
-  //     if (res < .5) {
-  //       row.result = "loss";
-  //     } else if (res > .5) {
-  //       row.result = "win";
-  //     } else {
-  //       row.result = "draw";
-  //     }
-    //
-    //   rows.push(row);
-    // });
-var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+  var inputURL = "http://query.yahooapis.com/v1/public/yql"+
     "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
     "where%20symbol%20%3D%20%22"
     +stock+"%22%20and%20startDate%20%3D%20%22"
@@ -239,11 +223,10 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
        thead = table.append("thead");
        tbody = table.append("tbody");
 
-   thead.append("th").text("Date");
-   thead.append("th").text("Opponent");
-   thead.append("th").text("Result");
-   thead.append("th").text("Rating");
-   thead.append("th").text("");
+       thead.append("th").text("Date");
+       thead.append("th").text("AdjustedClose");
+       thead.append("th").text("High");
+       thead.append("th").text("Low");
 
    var tr = tbody.selectAll("tr")
        .data(rows)
@@ -255,7 +238,7 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
          .text(function(d) { return d; });
 
    var width = 80,
-       height = d3.select("table")[0][0].clientHeight,
+       height = d3.select("table")
        mx = 10,
        radius = 2;
   });
@@ -271,19 +254,17 @@ make_chart = function(id, stock, start, end, title){
     height = 270 - margin.top - margin.bottom;
 
   // Parse the date to Year, month, date format
-  var parseDate = d3.time.format("%Y-%m-%d").parse;
+  var parseDate = d3.timeParse("%Y-%m-%d");
 
   // Set the ranges
-  var x = d3.time.scale().range([0, width]);
-  var y = d3.scale.linear().range([height, 0]);
+  var x = d3.scaleTime().range([0, width]);
+  var y = d3.scaleLinear().range([height, 0]);
 
-  var xAxis = d3.svg.axis().scale(x)
-    .orient("bottom").ticks(5);
+  var xAxis = d3.axisBottom(x).ticks(5);
 
-  var yAxis = d3.svg.axis().scale(y)
-    .orient("left").ticks(5);
+  var yAxis = d3.axisLeft(y).ticks(5);
 
-  var valueline = d3.svg.line()
+  var valueline = d3.line()
     .x(function(d) { return x(d.date); })
     .y(function(d) { return y(d.high); });
 
@@ -359,80 +340,9 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 
 
 
-// Function that takes the table cell location, stock ticker, start date, amd end date
-make_hist = function(id, stock, start, end){
-
-  // Set the dimensions of the graph
-  var margin = {top: 30, right: 40, bottom: 30, left: 50},
-    width = 600 - margin.left - margin.right,
-    height = 270 - margin.top - margin.bottom;
-
-  // Parse the date to Year, month, date format
-  var parseDate = d3.time.format("%Y-%m-%d").parse;
-
-  // Set the ranges
-  var x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
-  var y = d3.scale.linear().range([height, 0]);
-
-  var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5) //.tickFormat(d3.time.format("%Y-%m"));
-
-  var yAxis = d3.svg.axis()
-  .scale(y)
-  .orient("left")
-    .ticks(5);
-
-  var svg = d3.select(id)
-    .append("svg")
-    .attr("width", width +
-     margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate("
-      + margin.left + "," + margin.top + ")");
-
-var inputURL = "http://query.yahooapis.com/v1/public/yql"+
-    "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
-    "where%20symbol%20%3D%20%22"
-    +stock+"%22%20and%20startDate%20%3D%20%22"
-    +start+"%22%20and%20endDate%20%3D%20%22"
-    +end+"%22&format=json&env=store%3A%2F%2F"
-    +"datatables.org%2Falltableswithkeys";
-
-    // Donwload the JSON data and parse
-    d3.json(inputURL, function(error, data){
-
-    data.query.results.quote.forEach(function(d) {
-        d.date = parseDate(d.Date);
-        d.volume = +d.Volume/1000000;  //volumne in millions
-    });
-
-    x.domain(data.query.results.quote.map(function(d) { return d.date; }));
-    y.domain([0, d3.max(data.query.results.quote, function(d) { console.log(d.volume); return d.volume; })]);
-
-    svg.append("g") // y volmne in millions label
-        .attr("class", "y axis")
-        .call(yAxis)
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", -50)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Volume in Millions");
-
-    svg.selectAll("bar") // fill bars
-        .data(data.query.results.quote)
-        .enter().append("rect")
-        .style("fill", "steelblue")
-        .attr("x", function(d) { return x(d.date); })
-        .attr("width", x.rangeBand())
-        .attr("y", function(d) { return y(d.volume); })
-        .attr("height", function(d) { return height - y(d.volume); });
-});
-};
-
 function init(){
   //Equities
-  make_table.call(make_table, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
+  make_chart.call(make_chart, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
   // make_chart.call(make_chart, "#cell2","^GSPC", start, end, "S&P 500 Index");
   // make_chart.call(make_chart, "#cell3","^IXIC", start, end, "NASDAQ Composite");
   // // Equities Volume
