@@ -50,24 +50,6 @@ h1  {
 
 }
 
-table {
-  border-collapse: collapse;
-}
-th {
-  border-bottom: 2px solid #ddd;
-  padding: 8px;
-  font-weight: bold;
-}
-td {
-  padding: 8px;
-  border-top: 1px solid #ddd;
-}
-#chart {
-  padding: 0px;
-}
-.xaxislabel {
-  font-size: 9px;
-}
 
 </style>
 
@@ -262,7 +244,67 @@ make_table = function(id, stock, start, end, title){
   });
 };
 
+// Function that takes the table cell location, stock ticker, start date, end date, and graph title
+make_table2 = function(id, stock, start, end, title){
 
+  //https://gist.github.com/jfreels/6814721
+  var tabulate = function (data,columns) {
+    var table = d3.select('body').append('table')
+    var thead = table.append('thead')
+    var tbody = table.append('tbody')
+
+    thead.append('tr')
+      .selectAll('th')
+        .data(columns)
+        .enter()
+      .append('th')
+        .text(function (d) { return d })
+
+    var rows = tbody.selectAll('tr')
+        .data(data)
+        .enter()
+      .append('tr')
+
+    var cells = rows.selectAll('td')
+        .data(function(row) {
+          return columns.map(function (column) {
+            return { column: column, value: row[column] }
+          })
+        })
+        .enter()
+      .append('td')
+        .text(function (d) { return d.value })
+
+    return table;
+  }
+
+  // Parse the date to Year, month, date format
+  var parseDate = d3.timeParse("%Y-%m-%d");
+
+  var inputURL = "http://query.yahooapis.com/v1/public/yql"+
+    "?q=select%20*%20from%20yahoo.finance.historicaldata%20"+
+    "where%20symbol%20%3D%20%22"
+    +stock+"%22%20and%20startDate%20%3D%20%22"
+    +start+"%22%20and%20endDate%20%3D%20%22"
+    +end+"%22&format=json&env=store%3A%2F%2F"
+    +"datatables.org%2Falltableswithkeys";
+
+    // Donwload the JSON data and parse
+    d3.json(inputURL, function(error, data){
+
+    data.query.results.quote.forEach(function(d) {
+              d.date = parseDate(d.Date);
+              d.adjClose = +d.Adj_Close;
+              d.high = +d.High;
+              d.low = +d.Low;
+
+              var columns = ['date','adjClose','High','Low']
+    tabulate(d,columns)
+
+    });
+
+  });
+};
 
 // Function that takes the table cell location, stock ticker, start date, end date, and graph title
 make_chart = function(id, stock, start, end, title){
@@ -354,46 +396,6 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .text(title);
-
-
-        // The table generation function
-function tabulate(data, columns) {
-    var table = d3.select("body").append("table")
-            .attr("style", "margin-left: 250px"),
-        thead = table.append("thead"),
-        tbody = table.append("tbody");
-
-    // append the header row
-    thead.append("tr")
-        .selectAll("th")
-        .data("Low")
-        .enter()
-        .append("th")
-            .text(function(column) { return column; });
-
-    // create a row for each object in the data
-    var rows = tbody.selectAll("tr")
-        .data(data.query.results.quote, function(d) { return d.low; })
-        .enter()
-        .append("tr");
-
-    // create a cell in each row for each column
-    var cells = rows.selectAll("td")
-        .data(function(row) {
-            return columns.map(function(column) {
-                return {column: column, value: row[column]};
-            });
-        })
-        .enter()
-        .append("td")
-        .attr("style", "font-family: Courier") // sets the font style
-            .html(function(d) { return d.value; });
-
-    return table;
-}
-
-// render the table
- var peopleTable = tabulate(data.query.results.quote, ["High", "Low"]);
 });
 };
 
@@ -402,7 +404,7 @@ function tabulate(data, columns) {
 function init(){
   //Equities
   make_chart.call(make_chart, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
-  make_table.call(make_table, "#cell2","^GSPC", start, end, "S&P 500 Index");
+  make_table2.call(make_table2, "#cell2","^GSPC", start, end, "S&P 500 Index");
   // make_chart.call(make_chart, "#cell3","^IXIC", start, end, "NASDAQ Composite");
   // // Equities Volume
   // make_hist.call(make_hist, "#cell4","^DJI", start, end);
