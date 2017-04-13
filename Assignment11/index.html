@@ -50,6 +50,25 @@ h1  {
 
 }
 
+table {
+  border-collapse: collapse;
+}
+th {
+  border-bottom: 2px solid #ddd;
+  padding: 8px;
+  font-weight: bold;
+}
+td {
+  padding: 8px;
+  border-top: 1px solid #ddd;
+}
+#chart {
+  padding: 0px;
+}
+.xaxislabel {
+  font-size: 9px;
+}
+
 </style>
 
 </head>
@@ -212,21 +231,20 @@ make_table = function(id, stock, start, end, title){
     data.query.results.quote.forEach(function(d) {
               d.date = parseDate(d.Date);
               d.adjClose = +d.Adj_Close;
-              d.close = +d.Close;
               d.high = +d.High;
               d.low = +d.Low;
 
-          rows.push(d);
+              rows.push(d);
     });
 
-    var table = d3.select("#datatable").append("table");
+    var table = d3.select("id").append("table");
        thead = table.append("thead");
        tbody = table.append("tbody");
 
-       thead.append("th").text("Date");
-       thead.append("th").text("AdjustedClose");
-       thead.append("th").text("High");
-       thead.append("th").text("Low");
+    thead.append("th").text("Date");
+    thead.append("th").text("AdjustedClose");
+    thead.append("th").text("High");
+    thead.append("th").text("Low");
 
    var tr = tbody.selectAll("tr")
        .data(rows)
@@ -243,6 +261,7 @@ make_table = function(id, stock, start, end, title){
        radius = 2;
   });
 };
+
 
 
 // Function that takes the table cell location, stock ticker, start date, end date, and graph title
@@ -335,6 +354,46 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .text(title);
+
+
+        // The table generation function
+function tabulate(data, columns) {
+    var table = d3.select("body").append("table")
+            .attr("style", "margin-left: 250px"),
+        thead = table.append("thead"),
+        tbody = table.append("tbody");
+
+    // append the header row
+    thead.append("tr")
+        .selectAll("th")
+        .data("Low")
+        .enter()
+        .append("th")
+            .text(function(column) { return column; });
+
+    // create a row for each object in the data
+    var rows = tbody.selectAll("tr")
+        .data(data.query.results.quote, function(d) { return d.low; })
+        .enter()
+        .append("tr");
+
+    // create a cell in each row for each column
+    var cells = rows.selectAll("td")
+        .data(function(row) {
+            return columns.map(function(column) {
+                return {column: column, value: row[column]};
+            });
+        })
+        .enter()
+        .append("td")
+        .attr("style", "font-family: Courier") // sets the font style
+            .html(function(d) { return d.value; });
+
+    return table;
+}
+
+// render the table
+ var peopleTable = tabulate(data.query.results.quote, ["High", "Low"]);
 });
 };
 
@@ -343,7 +402,7 @@ var inputURL = "http://query.yahooapis.com/v1/public/yql"+
 function init(){
   //Equities
   make_chart.call(make_chart, "#cell1","^DJI", start, end, "Dow Jones Industrial Average");
-  // make_chart.call(make_chart, "#cell2","^GSPC", start, end, "S&P 500 Index");
+  make_table.call(make_table, "#cell2","^GSPC", start, end, "S&P 500 Index");
   // make_chart.call(make_chart, "#cell3","^IXIC", start, end, "NASDAQ Composite");
   // // Equities Volume
   // make_hist.call(make_hist, "#cell4","^DJI", start, end);
