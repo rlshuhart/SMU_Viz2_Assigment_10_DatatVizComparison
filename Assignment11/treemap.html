@@ -2,12 +2,12 @@
 <html>
 <head>
 <!-- Reference:
-https://bl.ocks.org/mbostock/4063582 -->
+https://bl.ocks.org/mbostock/4063582
+https://bl.ocks.org/mbostock/6bbb0a7ff7686b124d80 -->
 
 <meta charset="utf-8">
 
 <title>ARE - Data Comparison Vizualization - Assignment 11 - Final</title>
-
 
 <style>
 
@@ -19,6 +19,7 @@ svg {
   font: 10px sans-serif;
 }
 </style>
+  <h1>Ebola Treemap</h1>
 </head>
 <svg width="960" height="570"></svg>
 <form>
@@ -26,7 +27,6 @@ svg {
   <label><input type="radio" name="mode" value="sumByCount"> Count</label>
 </form>
 <body>
-  <h1>Ebola Treemap</h1>
 <svg width="960" height="960"></svg>
 <!-- Download the minimized version of D3 from the website -->
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -45,13 +45,24 @@ var treemap = d3.treemap()
     .round(true)
     .paddingInner(1);
 
-d3.json("flare.json", function(error, data) {
+// d3.csv("flare.csv", type, function(error, data) {
+//   if (error) throw error;
+//
+//   var root = stratify(data)
+//       .sum(function(d) { return d.value; })
+//       .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
+
+d3.csv("data/ebola_data_db_format.csv", function(error, data) {
   if (error) throw error;
 
   var root = d3.hierarchy(data)
+  // line to work on and understand
+
       .eachBefore(function(d) { d.data.id = (d.parent ? d.parent.data.id + "." : "") + d.data.name; })
       .sum(sumBySize)
       .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
+      // .sum(function(d) { return d.value; })
+      // .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
 
   treemap(root);
 
