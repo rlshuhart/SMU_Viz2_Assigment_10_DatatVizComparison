@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Reference:
+https://bl.ocks.org/mbostock/8fe6fa6ed1fa976e5dd76cfa4d816fec -->
+
+<meta charset="utf-8">
+
+<title>ARE - Data Comparison Vizualization - Assignment 11 - Final</title>
+
+
+<style>
+
+svg {
+  font: 10px sans-serif;
+}
+
+a:hover tspan:first-child {
+  text-decoration: underline;
+}
+
+tspan:last-child {
+  font-size: 9px;
+  fill-opacity: 0.7;
+}
+
+</style>
+</head>
+<h1>Ebola Treemap</h1>
+<body>
+<svg width="960" height="960"></svg>
+<!-- Download the minimized version of D3 from the website -->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+var format = d3.format(",d");
+
+var treemap = d3.treemap()
+    .size([width, height])
+    .round(true)
+    .padding(1);
+
+d3.csv("data/ebola_data_db_format.csv"), function(d) {
+  d.country = +d.Country;
+  d.continent = +d.Continent;
+  d.value = +d.value;
+  d.date = +d.Date;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+
+  var root = d3.stratify()
+      .id(function(d) { return d.Country; })
+      .parentId(function(d) { return d.Country; })
+    (data)
+      .sum(function(d) { return d.value; })
+      .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
+
+  treemap(root);
+
+
+
+  cell.append("rect")
+      .attr("id", function(d) { return d.id; })
+      .attr("width", function(d) { return d.x1 - d.x0; })
+      .attr("height", function(d) { return d.y1 - d.y0; })
+      .attr("fill", function(d) { var a = d.ancestors(); return color(a[a.length - 2].id); });
+
+
+
+
+  label.append("tspan")
+      .attr("x", 4)
+      .attr("y", 25)
+      .text(function(d) { return format(d.value); });
+
+  cell.append("title")
+      .text(function(d) { return d.id + "\n" + format(d.value);
+
+      cell.append("title")
+          .text(function(d) { return d.id + "\n" + format(d.value); });
+    });
+
+</script>
+</body>
+</html>
